@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding Distributions - Machine Learning, Through PyTorch Code</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="distributions.css">
+    <script src="distributions.js" defer></script>
+</head>
+<body>
+    <nav>
+        <a href="../../index.html">← Home</a>
+    </nav>
+
+    <h1>Understanding Distributions</h1>
+    <p class="subtitle">and how to sample random values in PyTorch for initialization and training.</p>
+
+    <h2>Why Distributions Matter</h2>
+    <p>Distributions are fundamental to deep learning. We use them for <strong>weight initialization</strong>, <strong>data augmentation</strong>, and <strong>probabilistic modeling</strong>.</p>
+
+    <div class="highlight-box">
+        <strong>Key Concept:</strong> A distribution defines the probability of different values occurring. PyTorch provides easy ways to sample from various distributions.
+    </div>
+
+    <h2>Common Distributions</h2>
+
+    <div class="visual-demo">
+        <h3 style="text-align: center; margin-bottom: 20px;">Interactive Distribution Sampler</h3>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">Watch samples being drawn from different distributions</p>
+
+        <div class="distribution-controls">
+            <label>Distribution Type:</label>
+            <select id="distType" onchange="changeDistribution()">
+                <option value="normal">Normal (Gaussian)</option>
+                <option value="uniform">Uniform</option>
+                <option value="bernoulli">Bernoulli</option>
+            </select>
+        </div>
+
+        <div class="histogram-container">
+            <canvas id="histogramCanvas" width="600" height="300"></canvas>
+        </div>
+
+        <div id="distInfo" class="dist-info"></div>
+
+        <div class="control-buttons">
+            <button onclick="sampleOnce()">Sample 1 Value</button>
+            <button onclick="sampleMany()">Sample 100 Values</button>
+            <button onclick="resetDistribution()">Reset</button>
+        </div>
+    </div>
+
+    <h2>Normal Distribution</h2>
+    <p>The most common distribution in deep learning. Used for weight initialization (Xavier, He initialization).</p>
+
+    <div class="code-block"><span class="keyword">import</span> torch
+
+<span class="comment"># Sample from normal distribution</span>
+<span class="comment"># mean=0, std=1 (standard normal)</span>
+x = torch.randn(<span class="number">3</span>, <span class="number">3</span>)
+
+<span class="keyword">print</span>(x)
+<span class="comment"># tensor([[-0.4125,  0.1681, -0.6782],</span>
+<span class="comment">#         [ 1.2347, -0.2341,  0.5234],</span>
+<span class="comment">#         [-0.1234,  0.8765, -0.3456]])</span>
+
+<span class="comment"># Custom mean and std</span>
+mean, std = <span class="number">5</span>, <span class="number">2</span>
+x = torch.normal(mean, std, size=(<span class="number">3</span>, <span class="number">3</span>))</div>
+
+    <h2>Uniform Distribution</h2>
+    <p>All values in a range are equally likely. Useful for random sampling within bounds.</p>
+
+    <div class="code-block"><span class="keyword">import</span> torch
+
+<span class="comment"># Sample from uniform [0, 1)</span>
+x = torch.rand(<span class="number">3</span>, <span class="number">3</span>)
+
+<span class="comment"># Custom range [min, max)</span>
+x = torch.empty(<span class="number">3</span>, <span class="number">3</span>).uniform_(<span class="number">-1</span>, <span class="number">1</span>)</div>
+
+    <h2>Summary</h2>
+    <div class="highlight-box">
+        <strong>torch.randn()</strong> - Normal distribution (mean=0, std=1)<br>
+        <strong>torch.rand()</strong> - Uniform distribution [0, 1)<br>
+        <strong>torch.randint()</strong> - Random integers<br><br>
+        Understanding distributions helps you initialize weights properly and add randomness where needed.
+    </div>
+
+    <footer>
+        A minimal explanation of neural network backpropagation
+    </footer>
+</body>
+</html>
