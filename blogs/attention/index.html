@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding Attention - Machine Learning, Through PyTorch Code</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="attention.css">
+    <script src="attention.js" defer></script>
+</head>
+<body>
+    <nav>
+        <a href="../../index.html">← Home</a>
+    </nav>
+
+    <h1>Understanding Attention</h1>
+    <p class="subtitle">and why attention is all you need in PyTorch.</p>
+
+    <h2>What Is Attention?</h2>
+    <p>Attention allows a model to focus on different parts of the input sequence when producing each output. Instead of compressing all information into a fixed vector, attention <strong>dynamically weighs</strong> the relevance of each input element.</p>
+
+    <div class="highlight-box">
+        <strong>Key Concept:</strong> Attention computes a weighted sum of values, where weights are determined by the similarity between queries and keys.
+    </div>
+
+    <h2>The Attention Mechanism</h2>
+    <p>The scaled dot-product attention mechanism has three components:</p>
+
+    <div class="visual-demo">
+        <h3 style="text-align: center; margin-bottom: 20px;">Query • Key • Value</h3>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">Watch how attention scores are computed and applied</p>
+
+        <div class="attention-container">
+            <div class="attention-step">
+                <div class="step-label">Step 1: Compute Scores</div>
+                <div class="attention-viz" id="scoreViz">
+                    <div class="qk-matrix">Q • K<sup>T</sup></div>
+                </div>
+                <div class="step-desc">Dot product of Query and Key</div>
+            </div>
+
+            <div class="arrow-right">→</div>
+
+            <div class="attention-step">
+                <div class="step-label">Step 2: Softmax</div>
+                <div class="attention-viz" id="softmaxViz">
+                    <div class="softmax-bars" id="softmaxBars"></div>
+                </div>
+                <div class="step-desc">Normalize to probabilities</div>
+            </div>
+
+            <div class="arrow-right">→</div>
+
+            <div class="attention-step">
+                <div class="step-label">Step 3: Weighted Sum</div>
+                <div class="attention-viz" id="valueViz">
+                    <div class="value-output">Attention(Q,K,V)</div>
+                </div>
+                <div class="step-desc">Apply weights to Values</div>
+            </div>
+        </div>
+
+        <div class="control-buttons">
+            <button onclick="animateAttention()">Show Attention Flow</button>
+            <button onclick="resetAttention()">Reset</button>
+        </div>
+    </div>
+
+    <h2>Implementing Attention in PyTorch</h2>
+    <p>Here's how to implement scaled dot-product attention:</p>
+
+    <div class="code-block"><span class="keyword">import</span> torch
+<span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F
+
+<span class="keyword">def</span> <span class="function">scaled_dot_product_attention</span>(Q, K, V, mask=<span class="keyword">None</span>):
+    <span class="comment"># Q, K, V have shape: (batch, seq_len, d_k)</span>
+    d_k = Q.size(-<span class="number">1</span>)
+
+    <span class="comment"># Compute attention scores</span>
+    scores = torch.matmul(Q, K.transpose(-<span class="number">2</span>, -<span class="number">1</span>)) / torch.sqrt(torch.tensor(d_k))
+    <span class="comment"># Shape: (batch, seq_len, seq_len)</span>
+
+    <span class="comment"># Apply mask (optional)</span>
+    <span class="keyword">if</span> mask <span class="keyword">is not None</span>:
+        scores = scores.masked_fill(mask == <span class="number">0</span>, <span class="number">-1e9</span>)
+
+    <span class="comment"># Apply softmax to get attention weights</span>
+    attention_weights = F.softmax(scores, dim=-<span class="number">1</span>)
+    <span class="comment"># Shape: (batch, seq_len, seq_len)</span>
+
+    <span class="comment"># Compute weighted sum of values</span>
+    output = torch.matmul(attention_weights, V)
+    <span class="comment"># Shape: (batch, seq_len, d_k)</span>
+
+    <span class="keyword">return</span> output, attention_weights</div>
+
+    <div class="highlight-box">
+        <strong>Why Scale by √d_k?</strong><br><br>
+        Without scaling, dot products can grow large for high dimensions, pushing softmax into regions with tiny gradients. Dividing by √d_k keeps values in a reasonable range.
+    </div>
+
+    <h2>Using PyTorch's Built-in Attention</h2>
+    <p>PyTorch provides optimized attention implementations:</p>
+
+    <div class="code-block"><span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F
+
+<span class="comment"># PyTorch 2.0+ has scaled_dot_product_attention</span>
+output = F.scaled_dot_product_attention(Q, K, V, attn_mask=mask)
+
+<span class="comment"># For multi-head attention, use nn.MultiheadAttention</span>
+<span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn
+
+mha = nn.MultiheadAttention(embed_dim=<span class="number">512</span>, num_heads=<span class="number">8</span>)
+output, weights = mha(query, key, value)</div>
+
+    <h2>Summary</h2>
+    <div class="highlight-box">
+        <strong>Attention</strong> allows models to focus on relevant parts of the input.<br><br>
+        The formula: <strong>Attention(Q,K,V) = softmax(QK<sup>T</sup>/√d_k)V</strong><br><br>
+        PyTorch provides efficient implementations via <code>F.scaled_dot_product_attention</code> and <code>nn.MultiheadAttention</code>.
+    </div>
+
+    <footer>
+        A minimal explanation of neural network backpropagation
+    </footer>
+</body>
+</html>

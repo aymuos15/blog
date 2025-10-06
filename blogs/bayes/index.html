@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding Bayes' Theorem - Machine Learning, Through PyTorch Code</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="bayes.css">
+    <script src="bayes.js" defer></script>
+</head>
+<body>
+    <nav>
+        <a href="../../index.html">← Home</a>
+    </nav>
+
+    <h1>Understanding Bayes' Theorem</h1>
+    <p class="subtitle">and how PyTorch helps us work with probabilistic models.</p>
+
+    <h2>What Is Bayes' Theorem?</h2>
+    <p>Bayes' theorem describes the probability of an event based on <strong>prior knowledge</strong> of conditions related to the event. It's the foundation of probabilistic inference in machine learning.</p>
+
+    <div class="highlight-box">
+        <strong>The Formula:</strong> P(A|B) = P(B|A) × P(A) / P(B)<br><br>
+        <strong>In words:</strong> Posterior = (Likelihood × Prior) / Evidence
+    </div>
+
+    <h2>Visual Intuition</h2>
+    <p>Let's see how Bayes' theorem updates beliefs with new evidence:</p>
+
+    <div class="visual-demo">
+        <h3 style="text-align: center; margin-bottom: 20px;">Updating Beliefs with Evidence</h3>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">Watch how the posterior distribution changes</p>
+
+        <div class="bayes-container">
+            <div class="distribution-panel">
+                <div class="panel-label">Prior P(A)</div>
+                <div class="distribution-viz" id="priorViz">
+                    <canvas id="priorCanvas" width="200" height="150"></canvas>
+                </div>
+                <div class="panel-desc">Initial belief</div>
+            </div>
+
+            <div class="multiplication-symbol">×</div>
+
+            <div class="distribution-panel">
+                <div class="panel-label">Likelihood P(B|A)</div>
+                <div class="distribution-viz" id="likelihoodViz">
+                    <canvas id="likelihoodCanvas" width="200" height="150"></canvas>
+                </div>
+                <div class="panel-desc">Evidence given A</div>
+            </div>
+
+            <div class="arrow-right-large">→</div>
+
+            <div class="distribution-panel">
+                <div class="panel-label">Posterior P(A|B)</div>
+                <div class="distribution-viz" id="posteriorViz">
+                    <canvas id="posteriorCanvas" width="200" height="150"></canvas>
+                </div>
+                <div class="panel-desc">Updated belief</div>
+            </div>
+        </div>
+
+        <div class="control-buttons">
+            <button onclick="animateBayes()">Show Bayesian Update</button>
+            <button onclick="resetBayes()">Reset</button>
+        </div>
+    </div>
+
+    <h2>Implementing Bayes in PyTorch</h2>
+    <p>Here's how to work with probabilities in PyTorch:</p>
+
+    <div class="code-block"><span class="keyword">import</span> torch
+<span class="keyword">import</span> torch.nn.functional <span class="keyword">as</span> F
+
+<span class="comment"># Example: Bayesian classifier update</span>
+<span class="keyword">def</span> <span class="function">bayesian_update</span>(prior, likelihood, evidence):
+    <span class="comment">"""
+    prior: P(A) - initial belief
+    likelihood: P(B|A) - probability of evidence given hypothesis
+    evidence: P(B) - probability of evidence
+
+    Returns: P(A|B) - posterior probability
+    """</span>
+    posterior = (likelihood * prior) / evidence
+    <span class="keyword">return</span> posterior
+
+<span class="comment"># Example with actual values</span>
+prior = torch.tensor(<span class="number">0.3</span>)           <span class="comment"># 30% initial belief</span>
+likelihood = torch.tensor(<span class="number">0.8</span>)      <span class="comment"># 80% chance of evidence if true</span>
+evidence = torch.tensor(<span class="number">0.5</span>)        <span class="comment"># 50% overall chance of evidence</span>
+
+posterior = bayesian_update(prior, likelihood, evidence)
+<span class="keyword">print</span>(<span class="string">f"Posterior probability: {posterior.item():.2f}"</span>)
+<span class="comment"># Output: Posterior probability: 0.48</span></div>
+
+    <h2>Naive Bayes Classifier</h2>
+    <p>A practical application using PyTorch:</p>
+
+    <div class="code-block"><span class="keyword">import</span> torch
+<span class="keyword">import</span> torch.nn <span class="keyword">as</span> nn
+
+<span class="keyword">class</span> <span class="function">NaiveBayesClassifier</span>(nn.Module):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="keyword">self</span>, num_features, num_classes):
+        super().__init__()
+        <span class="comment"># Log probabilities for numerical stability</span>
+        <span class="keyword">self</span>.class_log_prior = nn.Parameter(
+            torch.zeros(num_classes)
+        )
+        <span class="keyword">self</span>.feature_log_prob = nn.Parameter(
+            torch.zeros(num_classes, num_features)
+        )
+
+    <span class="keyword">def</span> <span class="function">forward</span>(<span class="keyword">self</span>, x):
+        <span class="comment"># x shape: (batch_size, num_features)</span>
+
+        <span class="comment"># Compute log P(features|class) for each class</span>
+        log_likelihood = torch.matmul(x, <span class="keyword">self</span>.feature_log_prob.t())
+
+        <span class="comment"># Add log prior: log P(class)</span>
+        log_posterior = log_likelihood + <span class="keyword">self</span>.class_log_prior
+
+        <span class="comment"># Convert to probabilities</span>
+        <span class="keyword">return</span> F.softmax(log_posterior, dim=<span class="number">1</span>)
+
+<span class="comment"># Usage</span>
+model = NaiveBayesClassifier(num_features=<span class="number">10</span>, num_classes=<span class="number">3</span>)
+x = torch.randn(<span class="number">5</span>, <span class="number">10</span>)  <span class="comment"># 5 samples, 10 features</span>
+probs = model(x)        <span class="comment"># Returns class probabilities</span></div>
+
+    <div class="highlight-box">
+        <strong>Why Log Probabilities?</strong><br><br>
+        Working with log probabilities prevents <strong>numerical underflow</strong> when multiplying many small probabilities. PyTorch's log_softmax and cross_entropy use this trick internally.
+    </div>
+
+    <h2>Bayesian Neural Networks</h2>
+    <p>PyTorch makes it easy to implement uncertainty in neural networks:</p>
+
+    <div class="code-block"><span class="keyword">import</span> torch.distributions <span class="keyword">as</span> dist
+
+<span class="keyword">class</span> <span class="function">BayesianLinear</span>(nn.Module):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="keyword">self</span>, in_features, out_features):
+        super().__init__()
+        <span class="comment"># Weight distribution parameters</span>
+        <span class="keyword">self</span>.weight_mu = nn.Parameter(torch.randn(out_features, in_features))
+        <span class="keyword">self</span>.weight_sigma = nn.Parameter(torch.randn(out_features, in_features))
+
+    <span class="keyword">def</span> <span class="function">forward</span>(<span class="keyword">self</span>, x):
+        <span class="comment"># Sample weights from distribution</span>
+        weight_dist = dist.Normal(<span class="keyword">self</span>.weight_mu,
+                                  F.softplus(<span class="keyword">self</span>.weight_sigma))
+        weight = weight_dist.rsample()  <span class="comment"># Reparameterization trick</span>
+
+        <span class="keyword">return</span> F.linear(x, weight)</div>
+
+    <h2>Summary</h2>
+    <div class="highlight-box">
+        <strong>Bayes' Theorem</strong> updates probabilities based on new evidence.<br><br>
+        Use <strong>log probabilities</strong> in PyTorch to avoid numerical issues.<br><br>
+        PyTorch's <code>torch.distributions</code> module provides tools for probabilistic programming.
+    </div>
+
+    <footer>
+        A minimal explanation of neural network backpropagation
+    </footer>
+</body>
+</html>

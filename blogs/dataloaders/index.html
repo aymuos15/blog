@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding DataLoaders - Machine Learning, Through PyTorch Code</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="dataloaders.css">
+    <script src="dataloaders.js" defer></script>
+</head>
+<body>
+    <nav>
+        <a href="../../index.html">← Home</a>
+    </nav>
+
+    <h1>Understanding DataLoaders</h1>
+    <p class="subtitle">and how PyTorch efficiently batches and shuffles data for training.</p>
+
+    <h2>What Are DataLoaders?</h2>
+    <p>DataLoaders wrap around a Dataset and provide an <strong>iterable</strong> interface for batching, shuffling, and parallel data loading. They handle the tedious work of preparing data for training loops.</p>
+
+    <div class="highlight-box">
+        <strong>Key Concept:</strong> DataLoaders automatically batch your data, shuffle it between epochs, and can load data in parallel using multiple workers.
+    </div>
+
+    <h2>DataLoader Workflow</h2>
+    <p>See how a dataset gets transformed into batches:</p>
+
+    <div class="visual-demo">
+        <h3 style="text-align: center; margin-bottom: 20px;">From Dataset to Batches</h3>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">Watch how shuffling and batching work together</p>
+
+        <div class="dataloader-flow">
+            <div class="flow-step">
+                <div class="step-label">Original Dataset</div>
+                <div class="dataset-container" id="originalDataset"></div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <div class="flow-step">
+                <div class="step-label">After Shuffling</div>
+                <div class="dataset-container" id="shuffledDataset"></div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <div class="flow-step">
+                <div class="step-label">Batched (batch_size=4)</div>
+                <div class="batches-container" id="batchesContainer"></div>
+            </div>
+        </div>
+
+        <div class="control-buttons">
+            <button onclick="animateDataLoader()">Show DataLoader Process</button>
+            <button onclick="resetDataLoader()">Reset</button>
+        </div>
+    </div>
+
+    <h2>Creating a DataLoader</h2>
+    <p>Here's the basic pattern for creating and using DataLoaders:</p>
+
+    <div class="code-block"><span class="keyword">import</span> torch
+<span class="keyword">from</span> torch.utils.data <span class="keyword">import</span> Dataset, DataLoader
+
+<span class="comment"># 1. Define your Dataset</span>
+<span class="keyword">class</span> <span class="function">MyDataset</span>(Dataset):
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="keyword">self</span>, data, labels):
+        <span class="keyword">self</span>.data = data
+        <span class="keyword">self</span>.labels = labels
+
+    <span class="keyword">def</span> <span class="function">__len__</span>(<span class="keyword">self</span>):
+        <span class="keyword">return</span> len(<span class="keyword">self</span>.data)
+
+    <span class="keyword">def</span> <span class="function">__getitem__</span>(<span class="keyword">self</span>, idx):
+        <span class="keyword">return</span> <span class="keyword">self</span>.data[idx], <span class="keyword">self</span>.labels[idx]
+
+<span class="comment"># 2. Create Dataset instance</span>
+dataset = MyDataset(data, labels)
+
+<span class="comment"># 3. Create DataLoader</span>
+dataloader = DataLoader(
+    dataset,
+    batch_size=<span class="number">32</span>,      <span class="comment"># How many samples per batch</span>
+    shuffle=<span class="keyword">True</span>,        <span class="comment"># Shuffle data every epoch</span>
+    num_workers=<span class="number">4</span>,       <span class="comment"># Parallel data loading</span>
+    pin_memory=<span class="keyword">True</span>      <span class="comment"># Faster GPU transfer</span>
+)</div>
+
+    <h2>Using DataLoaders in Training</h2>
+    <p>DataLoaders make training loops clean and efficient:</p>
+
+    <div class="code-block"><span class="keyword">for</span> epoch <span class="keyword">in</span> range(num_epochs):
+    <span class="keyword">for</span> batch_idx, (inputs, targets) <span class="keyword">in</span> enumerate(dataloader):
+        <span class="comment"># Move to GPU</span>
+        inputs, targets = inputs.to(device), targets.to(device)
+
+        <span class="comment"># Forward pass</span>
+        outputs = model(inputs)
+        loss = criterion(outputs, targets)
+
+        <span class="comment"># Backward pass</span>
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        <span class="keyword">if</span> batch_idx % <span class="number">100</span> == <span class="number">0</span>:
+            <span class="keyword">print</span>(<span class="string">f'Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item()}'</span>)</div>
+
+    <div class="highlight-box">
+        <strong>Why Shuffling Matters:</strong><br><br>
+        Shuffling prevents the model from learning the order of training examples, ensuring each batch has diverse samples. This improves generalization and convergence.
+    </div>
+
+    <h2>Important DataLoader Parameters</h2>
+    <div class="params-grid">
+        <div class="param-card">
+            <strong>batch_size</strong>
+            <p>Number of samples per batch. Larger batches use more memory but can be more efficient.</p>
+        </div>
+
+        <div class="param-card">
+            <strong>shuffle</strong>
+            <p>Randomize data order each epoch. Essential for training, disable for validation/test.</p>
+        </div>
+
+        <div class="param-card">
+            <strong>num_workers</strong>
+            <p>Number of subprocesses for data loading. Speeds up I/O-bound datasets.</p>
+        </div>
+
+        <div class="param-card">
+            <strong>pin_memory</strong>
+            <p>Uses pinned memory for faster CPU-to-GPU transfer when training on GPU.</p>
+        </div>
+
+        <div class="param-card">
+            <strong>drop_last</strong>
+            <p>Drop the last incomplete batch if dataset size isn't divisible by batch_size.</p>
+        </div>
+
+        <div class="param-card">
+            <strong>collate_fn</strong>
+            <p>Custom function to combine samples into batches. Useful for variable-length sequences.</p>
+        </div>
+    </div>
+
+    <h2>Summary</h2>
+    <div class="highlight-box">
+        <strong>DataLoaders</strong> automate batching, shuffling, and parallel loading of data.<br><br>
+        They make training loops <strong>cleaner and more efficient</strong>.<br><br>
+        Use <code>shuffle=True</code> for training, <code>num_workers>0</code> for speed, and <code>pin_memory=True</code> when using GPU.
+    </div>
+
+    <footer>
+        A minimal explanation of neural network backpropagation
+    </footer>
+</body>
+</html>
