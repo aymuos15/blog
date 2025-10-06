@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding Precision-Recall Curves</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="precision-recall.css">
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <a href="../../index.html">← Back to Home</a>
+        </nav>
+
+        <h1>Understanding Precision-Recall Curves</h1>
+        <p class="date">A visual guide to evaluating classification models</p>
+
+        <p>
+            When evaluating machine learning classifiers, especially in imbalanced datasets,
+            the precision-recall curve provides crucial insights that accuracy alone cannot capture.
+            This metric pair helps us understand the tradeoffs between identifying positive cases
+            correctly (precision) and capturing all positive cases (recall).
+        </p>
+
+        <h2>What are Precision and Recall?</h2>
+
+        <p>
+            Precision and recall are two complementary metrics that emerge from the confusion matrix:
+        </p>
+
+        <div class="highlight-box">
+            <strong>Precision</strong>: Of all instances we predicted as positive, how many were actually positive?<br>
+            <code>Precision = TP / (TP + FP)</code><br><br>
+
+            <strong>Recall</strong>: Of all actual positive instances, how many did we correctly identify?<br>
+            <code>Recall = TP / (TP + FN)</code>
+        </div>
+
+        <p>
+            Where TP = True Positives, FP = False Positives, and FN = False Negatives.
+        </p>
+
+        <h2>The Precision-Recall Tradeoff</h2>
+
+        <p>
+            In most classifiers, there's an inherent tradeoff between precision and recall. By adjusting
+            the decision threshold, we can favor one metric over the other:
+        </p>
+
+        <ul>
+            <li><strong>High threshold</strong> → Stricter predictions → Higher precision, lower recall</li>
+            <li><strong>Low threshold</strong> → More lenient predictions → Lower precision, higher recall</li>
+        </ul>
+
+        <div class="visual-demo">
+            <h3>Interactive Visualization</h3>
+            <canvas id="prCanvas" width="600" height="400"></canvas>
+            <div class="pr-controls">
+                <label for="thresholdSlider">Decision Threshold: <span id="thresholdValue">0.5</span></label>
+                <input type="range" id="thresholdSlider" min="0" max="1" step="0.01" value="0.5">
+            </div>
+            <div class="metrics-display" id="metricsDisplay">
+                <div>Precision: <span id="precisionVal">-</span></div>
+                <div>Recall: <span id="recallVal">-</span></div>
+                <div>F1 Score: <span id="f1Val">-</span></div>
+            </div>
+        </div>
+
+        <h2>PyTorch Implementation</h2>
+
+        <p>
+            Computing precision-recall curves in PyTorch is straightforward using sklearn or implementing it manually:
+        </p>
+
+        <div class="code-block"><span class="keyword">import</span> torch
+<span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> precision_recall_curve
+<span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt
+
+<span class="comment"># Model predictions (probabilities)</span>
+y_scores = model(X_test)
+y_true = labels_test
+
+<span class="comment"># Convert to numpy for sklearn</span>
+y_scores_np = y_scores.detach().cpu().numpy()
+y_true_np = y_true.cpu().numpy()
+
+<span class="comment"># Compute precision-recall curve</span>
+precision, recall, thresholds = <span class="function">precision_recall_curve</span>(y_true_np, y_scores_np)
+
+<span class="comment"># Plot the curve</span>
+plt.<span class="function">plot</span>(recall, precision, <span class="string">'b-'</span>, linewidth=<span class="number">2</span>)
+plt.<span class="function">xlabel</span>(<span class="string">'Recall'</span>)
+plt.<span class="function">ylabel</span>(<span class="string">'Precision'</span>)
+plt.<span class="function">title</span>(<span class="string">'Precision-Recall Curve'</span>)
+plt.<span class="function">grid</span>(<span class="keyword">True</span>)
+plt.<span class="function">show</span>()</div>
+
+        <h2>When to Use Precision-Recall Curves</h2>
+
+        <p>
+            Precision-recall curves are particularly valuable in these scenarios:
+        </p>
+
+        <ul>
+            <li><strong>Imbalanced datasets</strong>: When positive class is rare (e.g., fraud detection, disease diagnosis)</li>
+            <li><strong>Cost-sensitive applications</strong>: When false positives and false negatives have different costs</li>
+            <li><strong>Ranking tasks</strong>: When you need to optimize for top-k predictions</li>
+            <li><strong>Model comparison</strong>: Comparing multiple models across different operating points</li>
+        </ul>
+
+        <h2>Average Precision (AP)</h2>
+
+        <p>
+            A single metric summarizing the precision-recall curve is the Average Precision (AP):
+        </p>
+
+        <div class="code-block"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> average_precision_score
+
+<span class="comment"># Compute AP score</span>
+ap_score = <span class="function">average_precision_score</span>(y_true_np, y_scores_np)
+<span class="function">print</span>(<span class="string">f"Average Precision: </span>{ap_score:<span class="string">.3f}"</span>)
+
+<span class="comment"># AP approximates the area under the PR curve</span>
+<span class="comment"># AP = 1.0 indicates perfect precision at all recall levels</span></div>
+
+        <h2>PR Curve vs ROC Curve</h2>
+
+        <p>
+            While ROC (Receiver Operating Characteristic) curves are more common, PR curves have advantages:
+        </p>
+
+        <div class="highlight-box">
+            <strong>Use PR curves when:</strong>
+            <ul>
+                <li>You have highly imbalanced data</li>
+                <li>You care more about the positive class</li>
+                <li>False positives are particularly costly</li>
+            </ul>
+            <br>
+            <strong>Use ROC curves when:</strong>
+            <ul>
+                <li>Classes are relatively balanced</li>
+                <li>You want to see performance across all classes equally</li>
+                <li>You need to compare with a random baseline easily</li>
+            </ul>
+        </div>
+
+        <h2>Key Takeaways</h2>
+
+        <ul>
+            <li>Precision-recall curves visualize the tradeoff between precision and recall across different thresholds</li>
+            <li>The curve's shape indicates model quality: curves closer to the top-right are better</li>
+            <li>Average Precision provides a single-number summary of the curve</li>
+            <li>PR curves are more informative than ROC curves for imbalanced datasets</li>
+            <li>The optimal threshold depends on your application's cost function</li>
+        </ul>
+
+        <p>
+            Understanding precision-recall curves enables you to make informed decisions about model
+            deployment and threshold selection based on your specific application requirements.
+        </p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
+    <script src="precision-recall.js"></script>
+</body>
+</html>

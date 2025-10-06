@@ -7,9 +7,6 @@ new p5(function(p) {
     const bins = new Array(numBins).fill(0);
     const targetBins = new Array(numBins).fill(0);
     let sampleCounter = 0;
-    let waveOffset = 0;
-    let breathePhase = 0;
-    const particles = [];
     let currentDistribution = 'normal';
     let transitionCounter = 0;
     const distributions = ['normal', 'uniform', 'bimodal', 'exponential'];
@@ -104,108 +101,80 @@ new p5(function(p) {
     }
 
     p.draw = function() {
-        // Bright cyan gradient background (static)
+        // Dark, professional background with subtle gradient
         for (let i = 0; i < p.height; i++) {
             let inter = p.map(i, 0, p.height, 0, 1);
-            let c = p.lerpColor(p.color(0, 200, 255), p.color(0, 150, 200), inter);
+            let c = p.lerpColor(p.color(28, 28, 32), p.color(18, 18, 22), inter);
             p.stroke(c);
             p.line(0, i, p.width, i);
         }
 
-        // Switch distributions every 0.5 seconds
+        // Switch distributions every 3 seconds (slower, more professional)
         transitionCounter++;
-        if (transitionCounter > 30) { // 0.5 seconds at 60fps
+        if (transitionCounter > 180) { // 3 seconds at 60fps
             switchDistribution();
             transitionCounter = 0;
         }
 
-        // Update animation phases
-        waveOffset += 0.05;
-        breathePhase += 0.02;
-
-        // Animate bins towards target
+        // Animate bins towards target (smooth transitions only)
         for (let i = 0; i < numBins; i++) {
-            bins[i] = p.lerp(bins[i], targetBins[i], 0.2);
+            bins[i] = p.lerp(bins[i], targetBins[i], 0.15);
         }
 
         let maxBin = p.max(bins);
         if (maxBin === 0) maxBin = 1;
 
         const barWidth = p.width / numBins;
-        const maxBarHeight = p.height * 0.75;
+        const maxBarHeight = p.height * 0.7;
+        const padding = p.height * 0.15;
 
-        // Draw histogram bars with wave and breathe effect
+        // Draw histogram bars with clean, professional style
         for (let i = 0; i < numBins; i++) {
-            // Wave motion
-            let wave = p.sin(waveOffset + i * 0.3) * 0.1 + 1;
-            // Breathing effect
-            let breathe = p.sin(breathePhase + i * 0.1) * 0.05 + 1;
-
-            const barHeight = p.map(bins[i], 0, maxBin, 0, maxBarHeight) * wave * breathe;
+            const barHeight = p.map(bins[i], 0, maxBin, 0, maxBarHeight);
             const x = i * barWidth;
-            const y = p.height - barHeight;
+            const y = padding + (maxBarHeight - barHeight);
 
-            // Original gradient: pink -> yellow -> green
-            let progress = i / numBins;
-            let barColor;
+            // Pastel yellow accent color (similar to data viz standards)
+            // Slightly lighter bars for higher values (subtle depth)
+            let intensity = p.map(bins[i], 0, maxBin, 0.6, 1.0);
+            let barColor = p.color(255, 235, 130, 200 * intensity); // Pastel yellow
 
-            if (progress < 0.5) {
-                barColor = p.lerpColor(
-                    p.color(255, 50, 150),  // Bright pink
-                    p.color(255, 200, 0),   // Bright yellow
-                    progress * 2
-                );
-            } else {
-                barColor = p.lerpColor(
-                    p.color(255, 200, 0),   // Bright yellow
-                    p.color(50, 255, 150),  // Bright green
-                    (progress - 0.5) * 2
-                );
-            }
-
-            // Draw bar with glow
+            // Draw clean bar with minimal styling
             p.fill(barColor);
             p.noStroke();
-            p.rect(x + 1, y, barWidth - 2, barHeight, 4, 4, 0, 0);
+            p.rect(x + 1, y, barWidth - 2, barHeight, 2, 2, 0, 0);
 
-            // Inner glow
-            p.fill(255, 255, 255, 80);
-            p.rect(x + 1, y, barWidth - 2, barHeight * 0.2, 4, 4, 0, 0);
-
-            // Outer glow for tall bars
-            if (bins[i] > maxBin * 0.6) {
-                p.fill(barColor);
-                p.drawingContext.shadowBlur = 20;
-                p.drawingContext.shadowColor = p.color(barColor).toString();
-                p.rect(x + 1, y, barWidth - 2, 5);
-                p.drawingContext.shadowBlur = 0;
+            // Subtle highlight on taller bars only
+            if (bins[i] > maxBin * 0.3) {
+                p.fill(255, 255, 255, 15);
+                p.rect(x + 1, y, barWidth - 2, p.max(barHeight * 0.15, 3), 2, 2, 0, 0);
             }
         }
 
-        // Draw curve based on distribution type
+        // Draw theoretical distribution curve (clean line)
         p.noFill();
-        p.stroke(255, 255, 255, 180);
-        p.strokeWeight(2 + p.sin(breathePhase) * 0.5);
+        p.stroke(255, 245, 180, 180); // Lighter pastel yellow for curve
+        p.strokeWeight(2);
         p.beginShape();
 
         for (let i = 0; i < numBins; i++) {
             let x = (i + 0.5) * barWidth;
             let y;
-            
+
             switch(currentDistribution) {
                 case 'normal':
                     // Bell curve
                     let mu = numBins / 2;
                     let sigma = numBins / 6;
                     let gaussian = p.exp(-p.pow(i - mu, 2) / (2 * sigma * sigma));
-                    y = p.height - gaussian * maxBarHeight * 0.95;
+                    y = padding + maxBarHeight - gaussian * maxBarHeight * 0.95;
                     break;
-                    
+
                 case 'uniform':
                     // Flat line
-                    y = p.height - maxBarHeight * 0.5;
+                    y = padding + maxBarHeight * 0.5;
                     break;
-                    
+
                 case 'bimodal':
                     // Two peaks
                     let mu1 = numBins * 0.25;
@@ -213,48 +182,41 @@ new p5(function(p) {
                     let sigma_bi = numBins / 12;
                     let peak1 = p.exp(-p.pow(i - mu1, 2) / (2 * sigma_bi * sigma_bi));
                     let peak2 = p.exp(-p.pow(i - mu2, 2) / (2 * sigma_bi * sigma_bi));
-                    y = p.height - (peak1 + peak2) * 0.5 * maxBarHeight * 0.95;
+                    y = padding + maxBarHeight - (peak1 + peak2) * 0.5 * maxBarHeight * 0.95;
                     break;
-                    
+
                 case 'exponential':
                     // Exponential decay
                     let decay = p.exp(-i * 0.15);
-                    y = p.height - decay * maxBarHeight * 0.95;
+                    y = padding + maxBarHeight - decay * maxBarHeight * 0.95;
                     break;
             }
-            
+
             p.vertex(x, y);
         }
         p.endShape();
 
-        // Update and draw particles
-        for (let i = particles.length - 1; i >= 0; i--) {
-            let particle = particles[i];
-
-            p.fill(255, 255, 255, particle.life * 200);
-            p.noStroke();
-            p.circle(particle.x, particle.y, particle.size * particle.life);
-
-            particle.life -= 0.02;
-            particle.y -= 0.5;
-
-            if (particle.life <= 0) {
-                particles.splice(i, 1);
-            }
+        // Draw subtle grid lines for context
+        p.stroke(255, 255, 255, 10);
+        p.strokeWeight(1);
+        for (let i = 0; i <= 4; i++) {
+            let yPos = padding + (maxBarHeight * i / 4);
+            p.line(0, yPos, p.width, yPos);
         }
 
-        // Display distribution name
-        p.fill(255, 255, 255, 230);
+        // Display distribution name (clean, minimal)
+        p.fill(200, 200, 200, 230);
         p.noStroke();
-        p.textSize(16);
+        p.textSize(14);
         p.textAlign(p.LEFT, p.TOP);
         let distName = currentDistribution.charAt(0).toUpperCase() + currentDistribution.slice(1);
-        p.text(distName, 10, 10);
+        p.text(distName, 12, 12);
 
-        // Static sample count (no animation)
-        p.textSize(14);
+        // Sample count
+        p.textSize(12);
         p.textAlign(p.RIGHT, p.TOP);
-        p.text(`n = ${sampleCounter}`, p.width - 10, 10);
+        p.fill(150, 150, 150, 200);
+        p.text(`n = ${sampleCounter}`, p.width - 12, 12);
     };
 
     p.windowResized = function() {
