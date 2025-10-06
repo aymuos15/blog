@@ -5,25 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Machine Learning, Through PyTorch Code</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
 </head>
 <body>
-    <h1>Machine Learning, Through <span class="pytorch-orange">PyTorch</span> Code</h1>
-    <p class="subtitle">Understanding neural networks by reading the implementation</p>
-
-    <p>Neural networks are often taught through mathematics and theory. This is a different approach: understanding machine learning concepts by reading and analyzing actual PyTorch code.</p>
-
-    <p>Each article breaks down a specific concept, showing both the implementation and the reasoning behind it.</p>
+    <h1>Machine learning, through <span class="pytorch-orange">PyTorch</span>.</h1>
+    <p class="subtitle">Pytorch sometimes works quirkily which makes it intuitively a bit different from the theory one learns. This is my attempt to tackle that, in seemingly differnt topics. However, I hope that, as one reads more, they will appreciate the nuances of the topics and choice of the torch functionality along side it. One can also think of this as my database for Human RAG during conversations with Tom, as a means to match is infinite test-time knowledge base.</p>
+    
+    <p>Lastly, as always, Talk is cheap, show me the code.</p>
 
     <div class="articles-list">
-        <div class="article-item">
+        <div class="article-item" data-blog="relu">
             <div class="article-title">
-                <a href="blogs/relu.html">Understanding ReLU: Forward vs Backward Pass</a>
+                <a href="blogs/relu/">Understanding ReLU</a>
             </div>
             <p class="article-description">
-                Why do forward and backward passes use different code? A deep dive into the ReLU activation function and the mathematics of backpropagation.
+                and why forward and backward passes use different code?
+            </p>
+        </div>
+
+        <div class="article-item" data-blog="slicing">
+            <div class="article-title">
+                <a href="blogs/slicing/">Understanding Tensor Slicing</a>
+            </div>
+            <p class="article-description">
+                and why [:, None] creates views, not copies
+            </p>
+        </div>
+
+        <div class="article-item" data-blog="vectorization">
+            <div class="article-title">
+                <a href="blogs/vectorization/">Vectorization vs For Loops</a>
+            </div>
+            <p class="article-description">
+                and why torch.where() is faster than if/else
             </p>
         </div>
     </div>
+
+    <!-- Load blog-specific card sketches -->
+    <script src="blogs/relu/card-sketch.js"></script>
+    <script src="blogs/slicing/card-sketch.js"></script>
+    <script src="blogs/vectorization/card-sketch.js"></script>
 
     <footer>
         A minimal explanation of neural network backpropagation

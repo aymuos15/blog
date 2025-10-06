@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Understanding Tensor Slicing - Machine Learning, Through PyTorch Code</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="slicing.css">
+    <script src="slicing.js" defer></script>
+</head>
+<body>
+    <nav>
+        <a href="../../index.html">← Home</a>
+    </nav>
+
+    <h1>Understanding Tensor Slicing</h1>
+    <p class="subtitle">and why [:, None] and .unsqueeze() behave differently than you might expect.</p>
+
+    <h2>Basic Slicing Example</h2>
+    <p>Slicing in PyTorch can be tricky because it creates <strong>views</strong> of the original tensor, not copies. This means changes to the slice affect the original tensor.</p>
+
+    <div class="highlight-box">
+        <strong>Key Concept:</strong> When you slice a tensor, PyTorch returns a view that shares the same underlying data storage.
+    </div>
+
+    <div class="visual-demo">
+        <h3 style="text-align: center; margin-bottom: 20px;">Visual Slicing Demo</h3>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">Watch how slicing creates a view of the original tensor</p>
+
+        <div class="matrix-container" id="slicingViz">
+            <div class="matrix">
+                <div class="matrix-label">Original Tensor</div>
+                <div class="matrix-grid" id="originalMatrix" style="grid-template-columns: repeat(3, 1fr);"></div>
+            </div>
+            <div class="operation">→</div>
+            <div class="matrix">
+                <div class="matrix-label">Slice x[0]</div>
+                <div class="matrix-grid" id="sliceMatrix" style="grid-template-columns: repeat(3, 1fr);"></div>
+            </div>
+        </div>
+
+        <div class="control-buttons">
+            <button onclick="animateSlicing()">Animate Slicing</button>
+            <button onclick="animateModification()">Modify Slice (View)</button>
+            <button onclick="resetSlicing()">Reset</button>
+        </div>
+    </div>
+
+    <div class="code-tabs">
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="switchTab(event, 'slice-basic')">Basic Slice</button>
+            <button class="tab-button" onclick="switchTab(event, 'slice-copy')">With Copy</button>
+        </div>
+        <div id="slice-basic" class="tab-content active">
+            <div class="code-block"><span class="keyword">import</span> torch
+
+<span class="comment"># Create a tensor</span>
+x = torch.tensor([[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],
+                  [<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>],
+                  [<span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>]])
+
+<span class="comment"># Slice creates a view</span>
+y = x[<span class="number">0</span>]  <span class="comment"># First row</span>
+
+<span class="comment"># Modifying the slice affects original!</span>
+y[<span class="number">0</span>] = <span class="number">999</span>
+
+<span class="keyword">print</span>(x)  <span class="comment"># [[999, 2, 3], [4, 5, 6], [7, 8, 9]]</span></div>
+        </div>
+        <div id="slice-copy" class="tab-content">
+            <div class="code-block"><span class="keyword">import</span> torch
+
+<span class="comment"># Create a tensor</span>
+x = torch.tensor([[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],
+                  [<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>],
+                  [<span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>]])
+
+<span class="comment"># .clone() creates an independent copy</span>
+y = x[<span class="number">0</span>].clone()
+
+<span class="comment"># Modifying the copy doesn't affect original</span>
+y[<span class="number">0</span>] = <span class="number">999</span>
+
+<span class="keyword">print</span>(x)  <span class="comment"># [[1, 2, 3], [4, 5, 6], [7, 8, 9]]</span></div>
+        </div>
+    </div>
+
+    <div class="interactive-demo">
+        <h3>Try It Yourself</h3>
+        <p>Enter a 3x3 tensor:</p>
+
+        <div class="input-group">
+            <label>Tensor Values</label>
+            <textarea id="tensorInput" rows="5">[[1, 2, 3],
+ [4, 5, 6],
+ [7, 8, 9]]</textarea>
+        </div>
+
+        <div class="input-group">
+            <label>Slice Operation</label>
+            <select id="sliceOp">
+                <option value="0">x[0] - First row</option>
+                <option value="1">x[:, 0] - First column</option>
+                <option value="2">x[1:] - Rows from index 1</option>
+            </select>
+        </div>
+
+        <button onclick="computeSlice()">Compute</button>
+
+        <div id="sliceResults"></div>
+    </div>
+
+    <h2>Summary</h2>
+    <div class="highlight-box">
+        Slicing creates <strong>views</strong>, not copies. Use <code>.clone()</code> when you need an independent copy of the data.
+    </div>
+
+    <footer>
+        A minimal explanation of neural network backpropagation
+    </footer>
+</body>
+</html>

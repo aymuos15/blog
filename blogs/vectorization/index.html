@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vectorization vs For Loops - Machine Learning, Through PyTorch Code</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="vectorization.css">
+    <script src="vectorization.js" defer></script>
+</head>
+<body>
+    <nav>
+        <a href="../../index.html">← Home</a>
+    </nav>
+
+    <h1>Vectorization vs For Loops</h1>
+    <p class="subtitle">and why torch.where() is faster than iterating with if/else.</p>
+
+    <h2>The Problem with For Loops</h2>
+    <p>When working with tensors, using Python for loops is <strong>slow</strong> because each iteration requires Python overhead. Vectorized operations leverage optimized C/CUDA code and run in parallel.</p>
+
+    <div class="highlight-box">
+        <strong>Key Concept:</strong> Vectorization means applying operations to entire tensors at once, rather than looping through individual elements.
+    </div>
+
+    <h2>Example: Filtering Positive Values</h2>
+
+    <div class="code-tabs">
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="switchTab(event, 'vectorize-loop')">For Loop (Slow)</button>
+            <button class="tab-button" onclick="switchTab(event, 'vectorize-fast')">Vectorized (Fast)</button>
+        </div>
+        <div id="vectorize-loop" class="tab-content active">
+            <div class="code-block"><span class="keyword">import</span> torch
+
+x = torch.tensor([<span class="number">-2</span>, <span class="number">-1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>])
+result = torch.zeros_like(x)
+
+<span class="comment"># Slow: Loop through each element</span>
+<span class="keyword">for</span> i <span class="keyword">in</span> range(len(x)):
+    <span class="keyword">if</span> x[i] > <span class="number">0</span>:
+        result[i] = x[i]
+    <span class="keyword">else</span>:
+        result[i] = <span class="number">0</span>
+
+<span class="keyword">print</span>(result)  <span class="comment"># tensor([0, 0, 0, 1, 2])</span></div>
+        </div>
+        <div id="vectorize-fast" class="tab-content">
+            <div class="code-block"><span class="keyword">import</span> torch
+
+x = torch.tensor([<span class="number">-2</span>, <span class="number">-1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>])
+
+<span class="comment"># Fast: Vectorized with boolean mask</span>
+mask = x > <span class="number">0</span>  <span class="comment"># tensor([False, False, False, True, True])</span>
+result = torch.where(mask, x, torch.zeros_like(x))
+
+<span class="comment"># Or even simpler:</span>
+result = torch.clamp(x, min=<span class="number">0</span>)  <span class="comment"># Same as ReLU!</span>
+
+<span class="keyword">print</span>(result)  <span class="comment"># tensor([0, 0, 0, 1, 2])</span></div>
+        </div>
+    </div>
+
+    <div class="visual-demo">
+        <h3 style="text-align: center; margin-bottom: 20px;">Visual Comparison: For Loop vs Vectorized</h3>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">Watch how vectorization processes all elements simultaneously</p>
+
+        <div class="comparison-container">
+            <div class="processing-demo">
+                <div class="demo-label">For Loop (Sequential)</div>
+                <div class="elements-grid" id="forLoopGrid"></div>
+                <div class="progress-text" id="forLoopProgress">Ready</div>
+            </div>
+
+            <div class="processing-demo">
+                <div class="demo-label">Vectorized (Parallel)</div>
+                <div class="elements-grid" id="vectorizedGrid"></div>
+                <div class="progress-text" id="vectorizedProgress">Ready</div>
+            </div>
+        </div>
+
+        <div class="control-buttons">
+            <button onclick="animateComparison()">Run Comparison</button>
+            <button onclick="resetComparison()">Reset</button>
+        </div>
+    </div>
+
+    <div class="visual-explanation">
+        <div class="column">
+            <h3>For Loop</h3>
+            <div>Python checks each element<br>one at a time</div>
+            <div style="margin-top: 10px; color: #999;">⏱️ Slow</div>
+        </div>
+        <div class="arrow">vs</div>
+        <div class="column">
+            <h3>Vectorized</h3>
+            <div>GPU/CPU processes all<br>elements in parallel</div>
+            <div style="margin-top: 10px; color: #4CAF50;">⚡ Fast</div>
+        </div>
+    </div>
+
+    <h2>Boolean Masks</h2>
+    <p>Boolean masks are the foundation of vectorization. A comparison like <code>x > 0</code> creates a tensor of True/False values.</p>
+
+    <div class="code-block"><span class="keyword">import</span> torch
+
+x = torch.tensor([<span class="number">-2</span>, <span class="number">-1</span>, <span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>])
+mask = x > <span class="number">0</span>
+
+<span class="keyword">print</span>(mask)        <span class="comment"># tensor([False, False, False, True, True])</span>
+<span class="keyword">print</span>(x[mask])      <span class="comment"># tensor([1, 2]) - only positive values!</span></div>
+
+    <div class="interactive-demo">
+        <h3>Try Different Conditions</h3>
+        <p>Compare for loop vs vectorized approaches:</p>
+
+        <div class="input-group">
+            <label>Input Tensor (1D array)</label>
+            <textarea id="vectorInput" rows="3">[-5, -2, 0, 3, 7]</textarea>
+        </div>
+
+        <div class="input-group">
+            <label>Condition</label>
+            <select id="conditionOp">
+                <option value="gt0">x > 0 (keep positives)</option>
+                <option value="lt0">x < 0 (keep negatives)</option>
+                <option value="gte5">x >= 5 (keep >= 5)</option>
+                <option value="even">x % 2 == 0 (keep evens)</option>
+            </select>
+        </div>
+
+        <button onclick="computeVectorization()">Compare Approaches</button>
+
+        <div id="vectorResults"></div>
+    </div>
+
+    <h2>Summary</h2>
+    <div class="highlight-box">
+        <strong>Avoid for loops</strong> when working with tensors.<br><br>
+        Use <strong>boolean masks</strong> like <code>x > 0</code> and operations like <code>torch.where()</code> for vectorized operations.<br><br>
+        Vectorization is both <strong>faster</strong> and more <strong>readable</strong>.
+    </div>
+
+    <footer>
+        A minimal explanation of neural network backpropagation
+    </footer>
+</body>
+</html>
