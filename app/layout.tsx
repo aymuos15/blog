@@ -26,6 +26,10 @@ export const metadata: Metadata = {
   title: "Machine Learning through PyTorch",
   description: "A comprehensive blog about machine learning concepts and implementations using PyTorch",
   manifest: `${basePath}/manifest.json`,
+  icons: {
+    icon: `${basePath}/favicon.ico`,
+    apple: `${basePath}/icon-192.png`,
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
