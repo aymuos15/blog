@@ -1,5 +1,3 @@
-**Tech Stack:**
-
 - Next.js 16 → Static export
 - React 19 → UI framework
 - TypeScript → Type safety
