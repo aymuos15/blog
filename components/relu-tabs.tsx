@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { ReluChart } from "./relu-chart"
 import { ReluInteractive } from "./relu-interactive"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
@@ -24,6 +25,47 @@ export function ReluTabs() {
   const [highlightedPoint, setHighlightedPoint] = useState<number | null>(null)
   const [minX, setMinX] = useState(-3)
   const [maxX, setMaxX] = useState(3)
+  const [activeTab, setActiveTab] = useState("graph")
+  const [heights, setHeights] = useState<Record<string, number>>({})
+
+  const graphRef = useRef<HTMLDivElement>(null)
+  const equationRef = useRef<HTMLDivElement>(null)
+  const theoryRef = useRef<HTMLDivElement>(null)
+  const codeRef = useRef<HTMLDivElement>(null)
+
+  const refs = {
+    graph: graphRef,
+    equation: equationRef,
+    theory: theoryRef,
+    code: codeRef,
+  }
+
+  useEffect(() => {
+    const measureHeights = () => {
+      const newHeights: Record<string, number> = {}
+      Object.entries(refs).forEach(([key, ref]) => {
+        if (ref.current) {
+          newHeights[key] = ref.current.offsetHeight
+        }
+      })
+      setHeights(newHeights)
+    }
+
+    // Measure on mount
+    measureHeights()
+
+    // Measure on window resize
+    const resizeObserver = new ResizeObserver(measureHeights)
+    Object.values(refs).forEach(ref => {
+      if (ref.current) {
+        resizeObserver.observe(ref.current)
+      }
+    })
+
+    return () => resizeObserver.disconnect()
+  }, [])
+
+  const currentHeight = heights[activeTab] || "auto"
 
   const handleCopy = () => {
     navigator.clipboard.writeText(reluCode)
@@ -42,26 +84,34 @@ export function ReluTabs() {
 
   return (
     <div className="w-full flex flex-col items-center">
-      <Tabs defaultValue="graph" className="w-full transition-all duration-700">
-        <div className="flex justify-center py-2">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <motion.div
+          className="flex justify-center py-2"
+          layout
+          transition={{ type: "spring", stiffness: 400, damping: 30, duration: 0.3 }}
+        >
           <TabsList>
             <TabsTrigger value="graph">Graph</TabsTrigger>
             <TabsTrigger value="equation">Equation</TabsTrigger>
             <TabsTrigger value="theory">Theory</TabsTrigger>
             <TabsTrigger value="code">Code</TabsTrigger>
           </TabsList>
-        </div>
+        </motion.div>
 
-        <div className="relative w-full overflow-hidden transition-all duration-700">
-          <TabsContent value="graph" className="!mt-0">
-            <div className="flex flex-col items-center w-full animate-in fade-in duration-300">
+        <motion.div
+          className="relative w-full overflow-hidden"
+          animate={{ height: currentHeight }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+        >
+          <TabsContent ref={graphRef} value="graph" className={`!mt-0 absolute w-full transition-opacity duration-300 ${activeTab === "graph" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
+            <div className="flex flex-col items-center w-full">
               <ReluChart minX={minX} maxX={maxX} highlightedPoint={highlightedPoint} />
               <ReluInteractive onPointChange={handlePointChange} onRangeChange={handleRangeChange} />
             </div>
           </TabsContent>
 
-          <TabsContent value="equation" className="!mt-0">
-            <div className="flex flex-col items-center justify-center py-12 space-y-8 animate-in fade-in duration-300">
+          <TabsContent ref={equationRef} value="equation" className={`!mt-0 absolute w-full transition-opacity duration-300 ${activeTab === "equation" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
+            <div className="flex flex-col items-center justify-center py-12 space-y-8">
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-4">Primary Definition</p>
                 <code className="text-3xl font-mono bg-muted p-6 rounded-lg block">
@@ -83,8 +133,8 @@ export function ReluTabs() {
             </div>
           </TabsContent>
 
-          <TabsContent value="theory" className="!mt-0">
-            <div className="flex items-center justify-center py-12 px-6 animate-in fade-in duration-300">
+          <TabsContent ref={theoryRef} value="theory" className={`!mt-0 absolute w-full transition-opacity duration-300 ${activeTab === "theory" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
+            <div className="flex items-center justify-center py-12 px-6">
               <div className="max-w-2xl text-center text-lg leading-relaxed">
                 <p>
                   ReLU (Rectified Linear Unit) is a non-linear activation function that outputs the input directly if positive, otherwise outputs zero.
@@ -93,8 +143,8 @@ export function ReluTabs() {
             </div>
           </TabsContent>
 
-          <TabsContent value="code" className="!mt-0">
-            <div className="py-3 animate-in fade-in duration-300">
+          <TabsContent ref={codeRef} value="code" className={`!mt-0 absolute w-full transition-opacity duration-300 ${activeTab === "code" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
+            <div className="py-3">
               <div className="relative max-w-lg mx-auto">
                 <button
                   onClick={handleCopy}
@@ -120,7 +170,7 @@ export function ReluTabs() {
               </div>
             </div>
           </TabsContent>
-      </div>
+        </motion.div>
       </Tabs>
     </div>
   )
