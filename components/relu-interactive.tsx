@@ -12,8 +12,8 @@ export function ReluInteractive({
   className?: string
 }) {
   const [singleValue, setSingleValue] = useState("")
-  const [minX, setMinX] = useState("-3")
-  const [maxX, setMaxX] = useState("3")
+  const [minX, setMinX] = useState("-2")
+  const [maxX, setMaxX] = useState("2")
 
   const handleSingleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value

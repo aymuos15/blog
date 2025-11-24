@@ -23,8 +23,8 @@ output = torch.nn.functional.relu(x)`
 export function ReluTabs() {
   const [copied, setCopied] = useState(false)
   const [highlightedPoint, setHighlightedPoint] = useState<number | null>(null)
-  const [minX, setMinX] = useState(-3)
-  const [maxX, setMaxX] = useState(3)
+  const [minX, setMinX] = useState(-2)
+  const [maxX, setMaxX] = useState(2)
   const [activeTab, setActiveTab] = useState("graph")
   const [heights, setHeights] = useState<Record<string, number>>({})
 
@@ -84,9 +84,9 @@ export function ReluTabs() {
 
   return (
     <div className="w-full flex flex-col items-center">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-2xl mx-auto">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <motion.div
-          className="flex justify-center py-2"
+          className="flex justify-center py-2 max-w-2xl mx-auto"
           layout
           transition={{ type: "spring", stiffness: 400, damping: 30, duration: 0.3 }}
         >
@@ -104,14 +104,14 @@ export function ReluTabs() {
           transition={{ duration: 0.3, ease: "easeInOut" }}
         >
           <TabsContent ref={graphRef} value="graph" className={`!mt-0 absolute w-full transition-opacity duration-300 ${activeTab === "graph" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
-            <div className="flex flex-col items-center w-full">
+            <div className="flex flex-col items-center w-full max-w-2xl mx-auto px-6">
               <ReluChart minX={minX} maxX={maxX} highlightedPoint={highlightedPoint} />
               <ReluInteractive className="mt-3" onPointChange={handlePointChange} onRangeChange={handleRangeChange} />
             </div>
           </TabsContent>
 
           <TabsContent ref={equationRef} value="equation" className={`!mt-0 absolute w-full transition-opacity duration-300 ${activeTab === "equation" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
-            <div className="flex flex-col items-center justify-center py-12 space-y-8">
+            <div className="flex flex-col items-center justify-center py-12 space-y-8 max-w-2xl mx-auto">
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-4">Primary Definition</p>
                 <code className="text-3xl font-mono bg-muted p-6 rounded-lg block">
@@ -134,8 +134,8 @@ export function ReluTabs() {
           </TabsContent>
 
           <TabsContent ref={theoryRef} value="theory" className={`!mt-0 absolute w-full transition-opacity duration-300 ${activeTab === "theory" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
-            <div className="flex items-center justify-center py-12 px-6">
-              <div className="max-w-2xl text-center text-lg leading-relaxed">
+            <div className="flex items-center justify-center py-12 max-w-2xl mx-auto">
+              <div className="text-center text-lg leading-relaxed">
                 <p>
                   ReLU (Rectified Linear Unit) is a non-linear activation function that outputs the input directly if positive, otherwise outputs zero.
                 </p>
@@ -144,8 +144,8 @@ export function ReluTabs() {
           </TabsContent>
 
           <TabsContent ref={codeRef} value="code" className={`!mt-0 absolute w-full transition-opacity duration-300 ${activeTab === "code" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
-            <div className="py-3">
-              <div className="relative max-w-lg mx-auto">
+            <div className="py-3 max-w-2xl mx-auto">
+              <div className="relative max-w-sm mx-auto">
                 <button
                   onClick={handleCopy}
                   className="absolute top-2 right-2 z-10 p-2 rounded-md hover:bg-muted transition-colors"
