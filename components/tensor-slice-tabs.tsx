@@ -250,22 +250,22 @@ export function TensorSliceTabs() {
           </TabsContent>
 
           <TabsContent ref={equationRef} value="equation" className={`!mt-0 absolute w-full transition-opacity duration-300 ${activeTab === "equation" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
-            <div className="flex flex-col items-center justify-center py-6 space-y-6 max-w-2xl mx-auto px-6">
-              <div className="text-center w-full">
+            <div className="flex flex-col items-center justify-center py-2 space-y-3 max-w-2xl mx-auto">
+              <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-2">Slice Notation</p>
                 <div className="bg-muted p-4 rounded-lg flex items-center justify-center">
                   <BlockMath math="\text{tensor}[\text{start}:\text{stop}:\text{step}]" />
                 </div>
               </div>
 
-              <div className="text-center w-full">
+              <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-2">Shape Transformation</p>
                 <div className="bg-muted p-4 rounded-lg flex items-center justify-center">
                   <BlockMath math="(m, n) \xrightarrow{\text{slice}} (m', n')" />
                 </div>
               </div>
 
-              <div className="text-center w-full">
+              <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-2">View vs Copy</p>
                 <div className="bg-muted p-4 rounded-lg flex items-center justify-center">
                   <BlockMath math="T' \xrightarrow{\text{view}} T \quad \text{vs} \quad T' = \text{clone}(T)" />
@@ -303,7 +303,7 @@ export function TensorSliceTabs() {
               <div>
                 <h3 className="font-semibold mb-2">Memory Contiguity</h3>
                 <p className="text-muted-foreground">
-                  Slicing can create non-contiguous tensors. Some operations require contiguous memory and may need
+                  Slicing can create non-contiguous tensors. Some operations require contiguous memory and may need {' '}
                   <code className="text-xs bg-muted px-1 py-0.5 rounded">.contiguous()</code> calls for optimal performance.
                 </p>
               </div>
@@ -311,8 +311,8 @@ export function TensorSliceTabs() {
           </TabsContent>
 
           <TabsContent ref={codeRef} value="code" className={`!mt-0 absolute w-full transition-opacity duration-300 ${activeTab === "code" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
-            <div className="py-3 max-w-2xl mx-auto px-6">
-              <div className="relative max-w-lg mx-auto">
+            <div className="py-3 max-w-2xl mx-auto">
+              <div className="relative max-w-md mx-auto">
                 <button
                   onClick={handleCopy}
                   className="absolute top-2 right-2 z-10 p-2 rounded-md hover:bg-muted transition-colors"
@@ -328,7 +328,7 @@ export function TensorSliceTabs() {
                   language="python"
                   style={isDark ? vscDarkPlus : coy}
                   className="!p-4 rounded-lg pr-12"
-                  customStyle={{ margin: 0 }}
+                  customStyle={{ marginTop: 0, marginBottom: 0, marginLeft: 0, marginRight: 0 }}
                   showLineNumbers
                   wrapLines
                 >
