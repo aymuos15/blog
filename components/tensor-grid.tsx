@@ -26,13 +26,14 @@ export function TensorGrid({ tensor, selectedIndices, onCellEdit, className }: T
   }
 
   return (
-    <div className={cn("flex flex-col items-center gap-4", className)}>
-      <div
-        className="inline-grid gap-1 p-4 bg-muted/30 rounded-lg"
-        style={{
-          gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`
-        }}
-      >
+    <div className={cn("flex flex-col items-center gap-4 w-full", className)}>
+      <div className="w-full max-w-xl h-[400px] bg-muted/30 rounded-lg flex items-center justify-center overflow-hidden mx-auto">
+        <div
+          className="inline-grid gap-1"
+          style={{
+            gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`
+          }}
+        >
         {tensor.map((row, rowIdx) =>
           row.map((value, colIdx) => {
             const key = `${rowIdx},${colIdx}`
@@ -55,6 +56,7 @@ export function TensorGrid({ tensor, selectedIndices, onCellEdit, className }: T
             )
           })
         )}
+        </div>
       </div>
 
       <div className="text-xs text-muted-foreground">

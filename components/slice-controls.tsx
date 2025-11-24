@@ -5,10 +5,11 @@ import { cn } from "@/lib/utils"
 
 interface SliceControlsProps {
   onSliceChange: (sliceExpression: string) => void
+  view?: '2d' | '3d'
   className?: string
 }
 
-const PRESET_SLICES = [
+const PRESET_SLICES_2D = [
   { label: "First Row", value: "[0]", description: "Select first row" },
   { label: "Last Row", value: "[-1]", description: "Select last row" },
   { label: "Rows 1-3", value: "[1:3]", description: "Select rows 1 to 2" },
@@ -19,9 +20,23 @@ const PRESET_SLICES = [
   { label: "Center 2x2", value: "[1:3, 1:3]", description: "Select center region" },
 ]
 
-export function SliceControls({ onSliceChange, className }: SliceControlsProps) {
+const PRESET_SLICES_3D = [
+  { label: "First Layer", value: "[0, :, :]", description: "Select entire first depth layer" },
+  { label: "Last Layer", value: "[-1, :, :]", description: "Select entire last depth layer" },
+  { label: "All Layers Row 0", value: "[:, 0, :]", description: "Select first row across all layers" },
+  { label: "All Layers Col 0", value: "[:, :, 0]", description: "Select first column across all layers" },
+  { label: "Center Cube", value: "[0:2, 1:3, 1:3]", description: "Select center 2x2x2 region" },
+  { label: "First Row First Layer", value: "[0, 0, :]", description: "Select first row of first layer" },
+  { label: "Diagonal Slice", value: "[0:2, 0:2, 0:2]", description: "Select diagonal cube" },
+  { label: "Every Other Layer", value: "[::2, :, :]", description: "Select every second layer" },
+]
+
+export function SliceControls({ onSliceChange, view = '2d', className }: SliceControlsProps) {
   const [customSlice, setCustomSlice] = useState("")
   const [error, setError] = useState("")
+
+  // Select preset slices based on view mode
+  const PRESET_SLICES = view === '3d' ? PRESET_SLICES_3D : PRESET_SLICES_2D
 
   const handlePresetClick = (slice: string) => {
     setCustomSlice(slice)

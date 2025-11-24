@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { motion } from "framer-motion"
 import { TensorGrid } from "./tensor-grid"
+import { TensorGrid3D } from "./tensor-grid-3d"
 import { SliceControls } from "./slice-controls"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
@@ -11,7 +12,7 @@ import { Copy, Check } from "lucide-react"
 import { BlockMath } from "react-katex"
 import "katex/dist/katex.min.css"
 
-const tensorSliceCode = `import torch
+const tensorSliceCode2D = `import torch
 
 x = torch.tensor([[1,2,3,4],
                   [5,6,7,8],
@@ -25,12 +26,33 @@ x[1:3]      # Rows 1-2
 x[:, 0]     # First column
 x[:, 1:3]   # Columns 1-2
 
+# Combined slicing
+x[0:2, 1:3] # Rows 0-1, Cols 1-2
+
 # Views vs Copies
 view = x[0]           # Shares memory
-copy = x[0].clone()   # Independent
+copy = x[0].clone()   # Independent`
 
-# Boolean masking
-x[x > 5]    # Elements > 5`
+const tensorSliceCode3D = `import torch
+
+x = torch.tensor([[[1,2,3,4],
+                    [5,6,7,8],
+                    [9,10,11,12]],
+                   [[13,14,15,16],
+                    [17,18,19,20],
+                    [21,22,23,24]]])
+
+# Depth slicing
+x[0, :, :]    # First layer
+x[:, 0, :]    # First row all layers
+x[:, :, 0]    # First column all layers
+
+# 3D region slicing
+x[0:2, 1:3, 1:3]  # 2x2x2 cube
+
+# Views vs Copies
+view = x[0]           # Shares memory
+copy = x[0].clone()   # Independent`
 
 // Parse slice expression and return selected indices
 function parseSlice(expr: string, tensor: number[][]): Set<string> {
@@ -103,18 +125,89 @@ function parseSlicePart(part: string, maxLen: number): number[] {
   return indices
 }
 
+// Parse 3D slice expression and return selected indices
+function parseSlice3D(expr: string, tensor: number[][][]): Set<string> {
+  const selected = new Set<string>()
+  const depth = tensor.length
+  const rows = tensor[0]?.length || 0
+  const cols = tensor[0]?.[0]?.length || 0
+
+  try {
+    // Remove whitespace
+    expr = expr.trim()
+
+    // Handle empty or invalid
+    if (!expr || !expr.startsWith('[')) return selected
+
+    // Remove outer brackets
+    const inner = expr.slice(1, -1)
+
+    // Split by comma to get depth, row, and column parts
+    const parts = inner.split(',').map(s => s.trim())
+
+    // Parse depth slice (if 3 parts, otherwise treat as 2D on first layer)
+    let depthIndices: number[]
+    let rowIndices: number[]
+    let colIndices: number[]
+
+    if (parts.length === 3) {
+      // Full 3D slice: [depth, rows, cols]
+      depthIndices = parseSlicePart(parts[0] || ':', depth)
+      rowIndices = parseSlicePart(parts[1] || ':', rows)
+      colIndices = parseSlicePart(parts[2] || ':', cols)
+    } else if (parts.length === 2) {
+      // 2D slice on first layer: [rows, cols]
+      depthIndices = [0]
+      rowIndices = parseSlicePart(parts[0] || ':', rows)
+      colIndices = parseSlicePart(parts[1] || ':', cols)
+    } else {
+      // Single dimension: [rows]
+      depthIndices = [0]
+      rowIndices = parseSlicePart(parts[0] || ':', rows)
+      colIndices = Array.from({ length: cols }, (_, i) => i)
+    }
+
+    // Generate selected indices
+    for (const d of depthIndices) {
+      for (const r of rowIndices) {
+        for (const c of colIndices) {
+          if (d >= 0 && d < depth && r >= 0 && r < rows && c >= 0 && c < cols) {
+            selected.add(`${d},${r},${c}`)
+          }
+        }
+      }
+    }
+  } catch (e) {
+    // Return empty set on parse error
+    console.error('Parse error:', e)
+  }
+
+  return selected
+}
+
 export function TensorSliceTabs() {
   const [copied, setCopied] = useState(false)
-  const [tensor, setTensor] = useState([
-    [1, 2, 3, 4],
-    [5, 6, 7, 8],
-    [9, 10, 11, 12]
+  const [tensor3D, setTensor3D] = useState([
+    [
+      [1, 2, 3, 4],
+      [5, 6, 7, 8],
+      [9, 10, 11, 12]
+    ],
+    [
+      [13, 14, 15, 16],
+      [17, 18, 19, 20],
+      [21, 22, 23, 24]
+    ]
   ])
+  const [view, setView] = useState<'2d' | '3d'>('2d')
   const [sliceExpression, setSliceExpression] = useState("[0]")
   const [selectedIndices, setSelectedIndices] = useState<Set<string>>(new Set())
   const [activeTab, setActiveTab] = useState("simulation")
   const [heights, setHeights] = useState<Record<string, number>>({})
   const [isDark, setIsDark] = useState(false)
+
+  // For 2D view, use the first layer of the 3D tensor
+  const tensor2D = tensor3D[0]
 
   const simulationRef = useRef<HTMLDivElement>(null)
   const equationRef = useRef<HTMLDivElement>(null)
@@ -174,23 +267,37 @@ export function TensorSliceTabs() {
 
   // Update selected indices when slice expression changes
   useEffect(() => {
-    const selected = parseSlice(sliceExpression, tensor)
+    const selected = view === '2d'
+      ? parseSlice(sliceExpression, tensor2D)
+      : parseSlice3D(sliceExpression, tensor3D)
     setSelectedIndices(selected)
-  }, [sliceExpression, tensor])
+  }, [sliceExpression, tensor2D, tensor3D, view])
 
   const currentHeight = heights[activeTab] || "auto"
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(tensorSliceCode)
+    const code = view === '2d' ? tensorSliceCode2D : tensorSliceCode3D
+    navigator.clipboard.writeText(code)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleCellEdit = (row: number, col: number, value: number) => {
-    const newTensor = tensor.map((r, i) =>
-      r.map((v, j) => (i === row && j === col ? value : v))
+  const handleCellEdit2D = (row: number, col: number, value: number) => {
+    const newTensor3D = tensor3D.map((layer, d) =>
+      d === 0
+        ? layer.map((r, i) => r.map((v, j) => (i === row && j === col ? value : v)))
+        : layer
     )
-    setTensor(newTensor)
+    setTensor3D(newTensor3D)
+  }
+
+  const handleCellEdit3D = (depth: number, row: number, col: number, value: number) => {
+    const newTensor3D = tensor3D.map((layer, d) =>
+      layer.map((r, i) =>
+        r.map((v, j) => (d === depth && i === row && j === col ? value : v))
+      )
+    )
+    setTensor3D(newTensor3D)
   }
 
   const handleSliceChange = (expr: string) => {
@@ -200,9 +307,18 @@ export function TensorSliceTabs() {
   // Calculate result tensor
   const resultValues = Array.from(selectedIndices)
     .map(key => {
-      const [r, c] = key.split(',').map(Number)
-      return tensor[r][c]
+      const parts = key.split(',').map(Number)
+      if (parts.length === 2) {
+        // 2D indices: [row, col]
+        const [r, c] = parts
+        return tensor2D[r]?.[c]
+      } else {
+        // 3D indices: [depth, row, col]
+        const [d, r, c] = parts
+        return tensor3D[d]?.[r]?.[c]
+      }
     })
+    .filter(val => val !== undefined)
 
   const resultShape = selectedIndices.size > 0
     ? `Result: [${resultValues.join(', ')}] (${selectedIndices.size} elements)`
@@ -212,7 +328,7 @@ export function TensorSliceTabs() {
     <div className="w-full flex flex-col items-center">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <motion.div
-          className="flex justify-center py-2 max-w-2xl mx-auto"
+          className="flex justify-center items-center gap-3 py-2 max-w-2xl mx-auto"
           layout
           transition={{ type: "spring", stiffness: 400, damping: 30, duration: 0.3 }}
         >
@@ -222,6 +338,30 @@ export function TensorSliceTabs() {
             <TabsTrigger value="theory">Theory</TabsTrigger>
             <TabsTrigger value="code">Code</TabsTrigger>
           </TabsList>
+
+          {/* 2D/3D View Toggle */}
+          <div className="flex gap-1 bg-muted p-1 rounded-md">
+            <button
+              onClick={() => setView('2d')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-sm transition-colors ${
+                view === '2d'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              2D
+            </button>
+            <button
+              onClick={() => setView('3d')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-sm transition-colors ${
+                view === '3d'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              3D
+            </button>
+          </div>
         </motion.div>
 
         <motion.div
@@ -231,11 +371,22 @@ export function TensorSliceTabs() {
         >
           <TabsContent ref={simulationRef} value="simulation" className={`!mt-0 absolute w-full transition-opacity duration-300 ${activeTab === "simulation" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
             <div className="flex flex-col items-center w-full max-w-3xl mx-auto px-6 space-y-4">
-              <TensorGrid
-                tensor={tensor}
-                selectedIndices={selectedIndices}
-                onCellEdit={handleCellEdit}
-              />
+              {/* Conditional Grid Rendering */}
+              <div className="w-full">
+                {view === '2d' ? (
+                  <TensorGrid
+                    tensor={tensor2D}
+                    selectedIndices={selectedIndices}
+                    onCellEdit={handleCellEdit2D}
+                  />
+                ) : (
+                  <TensorGrid3D
+                    tensor={tensor3D}
+                    selectedIndices={selectedIndices}
+                    onCellEdit={handleCellEdit3D}
+                  />
+                )}
+              </div>
 
               <div className="text-sm font-mono bg-muted/50 px-4 py-2 rounded-md">
                 Slice: <span className="text-primary font-semibold">{sliceExpression}</span>
@@ -245,7 +396,7 @@ export function TensorSliceTabs() {
                 {resultShape}
               </div>
 
-              <SliceControls onSliceChange={handleSliceChange} className="mt-4" />
+              <SliceControls onSliceChange={handleSliceChange} view={view} className="mt-4" />
             </div>
           </TabsContent>
 
@@ -254,14 +405,22 @@ export function TensorSliceTabs() {
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-2">Slice Notation</p>
                 <div className="bg-muted p-4 rounded-lg flex items-center justify-center">
-                  <BlockMath math="\text{tensor}[\text{start}:\text{stop}:\text{step}]" />
+                  {view === '2d' ? (
+                    <BlockMath math="\text{tensor}[\text{rows}, \text{cols}]" />
+                  ) : (
+                    <BlockMath math="\text{tensor}[\text{depth}, \text{rows}, \text{cols}]" />
+                  )}
                 </div>
               </div>
 
               <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-2">Shape Transformation</p>
                 <div className="bg-muted p-4 rounded-lg flex items-center justify-center">
-                  <BlockMath math="(m, n) \xrightarrow{\text{slice}} (m', n')" />
+                  {view === '2d' ? (
+                    <BlockMath math="(m, n) \xrightarrow{\text{slice}} (m', n')" />
+                  ) : (
+                    <BlockMath math="(d, m, n) \xrightarrow{\text{slice}} (d', m', n')" />
+                  )}
                 </div>
               </div>
 
@@ -332,7 +491,7 @@ export function TensorSliceTabs() {
                   showLineNumbers
                   wrapLines
                 >
-                  {tensorSliceCode}
+                  {view === '2d' ? tensorSliceCode2D : tensorSliceCode3D}
                 </SyntaxHighlighter>
               </div>
             </div>
