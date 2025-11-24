@@ -7,9 +7,10 @@ interface BlogListItemProps {
 
 export function BlogListItem({ post }: BlogListItemProps) {
   // Alternate between images based on post id
+  const basePath = process.env.NODE_ENV === 'production' ? '/blog' : '';
   const backgroundImage = post.id === "understanding-tensors"
-    ? 'url(/image1.png)'
-    : 'url(/image2.jpeg)';
+    ? `url(${basePath}/image1.png)`
+    : `url(${basePath}/image2.jpeg)`;
 
   // Use black text for tensor-slicing post, white for others
   const textColor = post.id === "tensor-slicing"
