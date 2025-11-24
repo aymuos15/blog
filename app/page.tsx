@@ -11,7 +11,7 @@ export default function Home() {
           <h1 className="text-3xl font-medium tracking-tight mb-8">
             Machine Learning through <span className="text-[#EE4C2C]">PyTorch</span>
           </h1>
-          <div className="space-y-6 text-muted-foreground text-base leading-relaxed">
+          <div className="space-y-6 text-muted-foreground text-base leading-relaxed text-justify">
             <p>
               PyTorch sometimes works quirkily which makes it intuitively a bit different from the theory one learns.
               This is my attempt to tackle that, in seemingly different topics. However, I hope that, as one reads more,

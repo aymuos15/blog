@@ -175,7 +175,7 @@ export function ReluTabs() {
                   language="python"
                   style={isDark ? vscDarkPlus : coy}
                   className="!p-4 rounded-lg pr-12"
-                  customStyle={{ backgroundColor: "transparent", margin: 0 }}
+                  customStyle={{ margin: 0 }}
                   showLineNumbers
                   wrapLines
                 >
