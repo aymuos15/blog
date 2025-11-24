@@ -20,10 +20,12 @@ export const viewport: Viewport = {
   ],
 };
 
+const basePath = process.env.NODE_ENV === 'production' ? '/blog' : '';
+
 export const metadata: Metadata = {
   title: "Machine Learning through PyTorch",
   description: "A comprehensive blog about machine learning concepts and implementations using PyTorch",
-  manifest: "/manifest.json",
+  manifest: `${basePath}/manifest.json`,
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
