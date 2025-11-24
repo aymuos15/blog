@@ -6,8 +6,10 @@ import { ReluChart } from "./relu-chart"
 import { ReluInteractive } from "./relu-interactive"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
-import { coy } from "react-syntax-highlighter/dist/esm/styles/prism"
+import { coy, vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { Copy, Check } from "lucide-react"
+import { BlockMath, InlineMath } from "react-katex"
+import "katex/dist/katex.min.css"
 
 const reluEquation = "f(x) = max(0, x)"
 
@@ -27,6 +29,7 @@ export function ReluTabs() {
   const [maxX, setMaxX] = useState(2)
   const [activeTab, setActiveTab] = useState("graph")
   const [heights, setHeights] = useState<Record<string, number>>({})
+  const [isDark, setIsDark] = useState(false)
 
   const graphRef = useRef<HTMLDivElement>(null)
   const equationRef = useRef<HTMLDivElement>(null)
@@ -39,6 +42,25 @@ export function ReluTabs() {
     theory: theoryRef,
     code: codeRef,
   }
+
+  useEffect(() => {
+    // Check initial theme
+    const isDarkMode = document.documentElement.classList.contains('dark')
+    setIsDark(isDarkMode)
+
+    // Watch for theme changes
+    const observer = new MutationObserver(() => {
+      const isDarkMode = document.documentElement.classList.contains('dark')
+      setIsDark(isDarkMode)
+    })
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    })
+
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     const measureHeights = () => {
@@ -111,23 +133,17 @@ export function ReluTabs() {
           </TabsContent>
 
           <TabsContent ref={equationRef} value="equation" className={`!mt-0 absolute w-full transition-opacity duration-300 ${activeTab === "equation" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
-            <div className="flex flex-col items-center justify-center py-12 space-y-8 max-w-2xl mx-auto">
+            <div className="flex flex-col items-center justify-center py-2 space-y-3 max-w-2xl mx-auto">
               <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-4">Primary Definition</p>
-                <code className="text-3xl font-mono bg-muted p-6 rounded-lg block">
-                  f(x) = max(0, x)
-                </code>
+                <p className="text-sm text-muted-foreground mb-2">Primary Definition</p>
+                <div className="bg-muted p-4 rounded-lg flex items-center justify-center">
+                  <BlockMath math="f(x) = \max(0, x)" />
+                </div>
               </div>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-4">Piecewise Definition</p>
-                <div className="bg-muted p-8 rounded-lg text-lg flex items-center justify-center">
-                  <div className="flex items-center">
-                    <span className="text-2xl mr-4">f(x) =</span>
-                    <div className="border-l-2 border-foreground pl-6 py-2">
-                      <div className="mb-3">0, &nbsp;&nbsp;&nbsp;&nbsp;if x ≤ 0</div>
-                      <div>x, &nbsp;&nbsp;&nbsp;&nbsp;if x &gt; 0</div>
-                    </div>
-                  </div>
+              <div className="text-center mt-6">
+                <p className="text-sm text-muted-foreground mb-2">Piecewise Definition</p>
+                <div className="bg-muted p-4 rounded-lg flex items-center justify-center">
+                  <BlockMath math="f(x) = \begin{cases} 0 & \text{if } x \leq 0 \\ x & \text{if } x > 0 \end{cases}" />
                 </div>
               </div>
             </div>
@@ -159,9 +175,9 @@ export function ReluTabs() {
                 </button>
                 <SyntaxHighlighter
                   language="python"
-                  style={coy}
-                  className="!m-0 !p-4 rounded-lg pr-12"
-                  customStyle={{ background: "transparent" }}
+                  style={isDark ? vscDarkPlus : coy}
+                  className="!p-4 rounded-lg pr-12"
+                  customStyle={{ backgroundColor: "transparent", margin: 0 }}
                   showLineNumbers
                   wrapLines
                 >

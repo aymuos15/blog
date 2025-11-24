@@ -24,7 +24,7 @@ export function Header() {
               size="icon"
               onClick={handleBack}
               aria-label="Go back"
-              className="h-10 w-10 rounded-none shadow-sm hover:bg-muted/50 hover:shadow-md transition-shadow"
+              className="h-10 w-10 rounded-none shadow-sm hover:bg-muted/50 hover:shadow-md transition-shadow dark:shadow-[0_1px_3px_0_rgba(255,255,255,0.25)] dark:hover:shadow-[0_4px_6px_-1px_rgba(255,255,255,0.3)]"
             />
           )}
         </div>
