@@ -1,0 +1,37 @@
+'use client';
+
+import { usePathname, useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { ThemeToggle } from './theme-toggle';
+
+export function Header() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const isBlogPost = pathname.startsWith('/blog/');
+
+  const handleBack = () => {
+    router.back();
+  };
+
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm">
+      <div className="flex items-center justify-between px-4 py-3">
+        {/* Back button - only show on blog post pages */}
+        <div className="w-10">
+          {isBlogPost && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleBack}
+              aria-label="Go back"
+              className="h-10 w-10 rounded-none shadow-sm hover:bg-muted/50 hover:shadow-md transition-shadow"
+            />
+          )}
+        </div>
+
+        {/* Theme toggle */}
+        <ThemeToggle />
+      </div>
+    </header>
+  );
+}

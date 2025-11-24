@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Header } from "@/components/header";
 import "./globals.css";
 
 const inter = Inter({
@@ -23,6 +24,7 @@ export default function RootLayout({
         className={`${inter.variable} font-sans antialiased`}
         style={{ fontFamily: 'var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif' }}
       >
+        <Header />
         {children}
       </body>
     </html>
