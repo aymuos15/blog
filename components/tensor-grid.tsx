@@ -27,7 +27,7 @@ export function TensorGrid({ tensor, selectedIndices, onCellEdit, className }: T
 
   return (
     <div className={cn("flex flex-col items-center gap-4 w-full", className)}>
-      <div className="w-full max-w-xl h-[400px] bg-muted/30 rounded-lg flex items-center justify-center overflow-hidden mx-auto">
+      <div className="w-full max-w-xl h-[320px] rounded-lg flex items-center justify-center overflow-hidden mx-auto">
         <div
           className="inline-grid gap-1"
           style={{

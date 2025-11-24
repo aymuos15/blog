@@ -86,7 +86,7 @@ export function SliceControls({ onSliceChange, view = '2d', className }: SliceCo
             value={customSlice}
             onChange={(e) => handleInputChange(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleCustomApply()}
-            placeholder="e.g., [0:2, 1:3] or [::2, :]"
+            placeholder={view === '2d' ? "e.g., [0:2, 1:3] or [::2, :]" : "e.g., [0, :, :] or [0:2, 1:3, 1:3]"}
             className={cn(
               "flex-1 px-3 py-2 text-sm border rounded-md bg-background",
               error ? "border-red-500" : "border-border"
@@ -105,13 +105,23 @@ export function SliceControls({ onSliceChange, view = '2d', className }: SliceCo
       {/* Syntax Help */}
       <div className="text-xs text-muted-foreground space-y-1 p-3 bg-muted/30 rounded-md">
         <p className="font-medium">Syntax:</p>
-        <ul className="list-disc list-inside space-y-0.5 ml-2">
-          <li><code>[n]</code> - Single row n</li>
-          <li><code>[start:stop]</code> - Rows from start to stop-1</li>
-          <li><code>[::step]</code> - Every step-th row</li>
-          <li><code>[:, n]</code> - Single column n</li>
-          <li><code>[rows, cols]</code> - Combine row and column slices</li>
-        </ul>
+        {view === '2d' ? (
+          <ul className="list-disc list-inside space-y-0.5 ml-2">
+            <li><code>[n]</code> - Single row n</li>
+            <li><code>[start:stop]</code> - Rows from start to stop-1</li>
+            <li><code>[::step]</code> - Every step-th row</li>
+            <li><code>[:, n]</code> - Single column n</li>
+            <li><code>[rows, cols]</code> - Combine row and column slices</li>
+          </ul>
+        ) : (
+          <ul className="list-disc list-inside space-y-0.5 ml-2">
+            <li><code>[d, :, :]</code> - Single depth layer d</li>
+            <li><code>[:, r, :]</code> - Single row r across all layers</li>
+            <li><code>[:, :, c]</code> - Single column c across all layers</li>
+            <li><code>[start:stop]</code> - Range from start to stop-1</li>
+            <li><code>[depth, rows, cols]</code> - Combine 3D slices</li>
+          </ul>
+        )}
       </div>
     </div>
   )
