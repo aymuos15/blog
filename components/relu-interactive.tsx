@@ -5,9 +5,11 @@ import { useState } from "react"
 export function ReluInteractive({
   onPointChange,
   onRangeChange,
+  className,
 }: {
   onPointChange: (value: number | null) => void
   onRangeChange: (min: number, max: number) => void
+  className?: string
 }) {
   const [singleValue, setSingleValue] = useState("")
   const [minX, setMinX] = useState("-3")
@@ -47,7 +49,7 @@ export function ReluInteractive({
   }
 
   return (
-    <div className="flex gap-4 justify-center mt-6">
+    <div className={`flex gap-4 justify-center ${className || ""}`}>
       {/* Single Point Input */}
       <div className="bg-muted p-2 px-3 rounded-lg flex items-center gap-2 text-sm">
         <label className="font-semibold text-muted-foreground">Evaluate:</label>

@@ -84,7 +84,7 @@ export function ReluTabs() {
 
   return (
     <div className="w-full flex flex-col items-center">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-2xl mx-auto">
         <motion.div
           className="flex justify-center py-2"
           layout
@@ -99,14 +99,14 @@ export function ReluTabs() {
         </motion.div>
 
         <motion.div
-          className="relative w-full overflow-hidden"
+          className="relative w-full overflow-visible pt-4"
           animate={{ height: currentHeight }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
         >
           <TabsContent ref={graphRef} value="graph" className={`!mt-0 absolute w-full transition-opacity duration-300 ${activeTab === "graph" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}>
             <div className="flex flex-col items-center w-full">
               <ReluChart minX={minX} maxX={maxX} highlightedPoint={highlightedPoint} />
-              <ReluInteractive onPointChange={handlePointChange} onRangeChange={handleRangeChange} />
+              <ReluInteractive className="mt-3" onPointChange={handlePointChange} onRangeChange={handleRangeChange} />
             </div>
           </TabsContent>
 

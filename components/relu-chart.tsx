@@ -36,7 +36,7 @@ export function ReluChart({ minX = -3, maxX = 3, highlightedPoint = null }: Relu
 
   return (
     <ChartContainer config={chartConfig} className="h-[400px] w-full">
-        <LineChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+        <LineChart data={chartData} margin={{ top: 10, right: 0, left: 0, bottom: 10 }}>
         <CartesianGrid stroke="#d4d4d1" strokeWidth={1} />
         <XAxis
           dataKey="x"
@@ -48,7 +48,7 @@ export function ReluChart({ minX = -3, maxX = 3, highlightedPoint = null }: Relu
         <YAxis
           domain={[minX, maxX]}
         >
-          <Label value="f(x)" angle={-90} position="insideLeft" />
+          <Label value="f(x)" angle={-90} position="insideLeft" offset={15} />
         </YAxis>
         <Tooltip
           contentStyle={{ backgroundColor: "#fff", border: "1px solid #ccc" }}
