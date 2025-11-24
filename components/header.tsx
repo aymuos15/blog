@@ -7,7 +7,7 @@ import { ThemeToggle } from './theme-toggle';
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const isBlogPost = pathname.startsWith('/blog/');
+  const isBlogPost = pathname !== '/';
 
   const handleBack = () => {
     router.back();
