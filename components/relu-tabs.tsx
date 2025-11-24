@@ -1,17 +1,15 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 import { ReluChart } from "./relu-chart"
 import { ReluInteractive } from "./relu-interactive"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { coy, vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { Copy, Check } from "lucide-react"
-import { BlockMath, InlineMath } from "react-katex"
+import { BlockMath } from "react-katex"
 import "katex/dist/katex.min.css"
-
-const reluEquation = "f(x) = max(0, x)"
 
 const reluCode = `import torch
 

@@ -1,6 +1,5 @@
 import { getBlogPosts } from "@/lib/blog";
 import { BlogListItem } from "@/components/blog-list-item";
-import { Separator } from "@/components/ui/separator";
 
 export default function Home() {
   const posts = getBlogPosts();

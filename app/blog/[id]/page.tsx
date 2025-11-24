@@ -1,7 +1,5 @@
 import { notFound } from "next/navigation";
 import { getBlogPost, getBlogPosts } from "@/lib/blog";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { ReluTabs } from "@/components/relu-tabs";
 
 export async function generateStaticParams() {
