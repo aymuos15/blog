@@ -12,42 +12,13 @@ export interface BlogPost {
 export const blogPosts: BlogPost[] = [
   {
     id: "understanding-tensors",
-    title: "Understanding Tensors in PyTorch",
-    excerpt: "Deep dive into PyTorch tensors and their quirks that differ from mathematical theory.",
-    content: `
-# Understanding Tensors in PyTorch
-
-Tensors are the fundamental building blocks in PyTorch, but their behavior can be surprisingly different from the mathematical concept you learned in linear algebra class.
-
-## The Memory Layout Quirk
-
-In theory, tensors are abstract mathematical objects. In PyTorch, they're concrete data structures with memory layout considerations:
-
-\`\`\`python
-import torch
-
-# These look the same but behave differently
-x = torch.randn(3, 4)
-y = x.t()  # Transpose - no data copy!
-z = y.contiguous()  # Now it's a real copy
-
-print(x.is_contiguous())  # True
-print(y.is_contiguous())  # False!
-print(z.is_contiguous())  # True
-\`\`\`
-
-## Why This Matters
-
-Understanding contiguity affects performance dramatically. Many PyTorch operations require contiguous tensors, and the framework will silently copy data if needed - causing mysterious slowdowns.
-
-## Conclusion
-
-The gap between mathematical theory and PyTorch implementation is where the magic (and bugs) happen. Understanding these nuances makes you a better practitioner.
-    `,
+    title: "Understanding ReLU",
+    excerpt: "Visual representation of the ReLU activation function.",
+    content: `GRAPH`,
     date: "2024-11-24",
     author: "ML Practitioner",
-    tags: ["PyTorch", "Tensors", "Memory"],
-    readTime: "8 min read"
+    tags: ["PyTorch", "ReLU", "Activation Functions"],
+    readTime: "1 min read"
   },
   {
     id: "autograd-mechanics",
