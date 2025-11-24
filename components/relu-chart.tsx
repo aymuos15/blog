@@ -97,8 +97,8 @@ export function ReluChart({ minX = -3, maxX = 3, highlightedPoint = null }: Relu
         </YAxis>
         <Tooltip
           contentStyle={{ backgroundColor: colors.background, border: `1px solid ${colors.border}` }}
-          formatter={(value) => value.toFixed(4)}
-          labelFormatter={(value) => `x: ${value.toFixed(2)}`}
+          formatter={(value) => typeof value === 'number' ? value.toFixed(4) : value}
+          labelFormatter={(value) => typeof value === 'number' ? `x: ${value.toFixed(2)}` : `x: ${value}`}
         />
         <Line
           type="linear"
@@ -107,7 +107,7 @@ export function ReluChart({ minX = -3, maxX = 3, highlightedPoint = null }: Relu
           strokeWidth={2.5}
           dot={false}
         />
-        {highlightedY !== null && (
+        {highlightedY !== null && highlightedPoint !== null && (
           <ReferenceDot x={highlightedPoint} y={highlightedY} r={6} fill="#ef4444" stroke={colors.background} strokeWidth={2} />
         )}
       </LineChart>
